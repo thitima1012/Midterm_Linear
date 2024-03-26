@@ -10,22 +10,19 @@ function addToCart(productId, price, quantity) {
   updateCartDisplay();
 }
 
-
 // ลบสินค้าออกจากตะกร้า
 function removeFromCart(productId) {
-    if (cart[productId]) {
-        cart[productId].quantity--;
-        if (cart[productId].quantity === 0) {
-            delete cart[productId];
-        }
+  if (cart[productId]) {
+    cart[productId].quantity--;
+    if (cart[productId].quantity === 0) {
+      delete cart[productId];
     }
-    updateCartDisplay();
+  }
+  updateCartDisplay();
 }
 
-
-
 // เพิ่ม Event Listener สำหรับปุ่ม Add to Cart และปุ่ม Remove from Cart
-
+// เพิ่ม Event Listener สำหรับปุ่ม Add to Cart
 document.querySelectorAll(".add-to-cart").forEach((button) => {
   button.addEventListener("click", () => {
     const productId = button.getAttribute("data-product-id");
@@ -42,13 +39,13 @@ document.querySelectorAll(".add-to-cart").forEach((button) => {
   });
 });
 
-document.querySelectorAll('.remove-from-cart').forEach(button => {
-    button.addEventListener('click', () => {
-        const productId = button.getAttribute('data-product-id');
-        removeFromCart(productId);
-    });
-});
 
+document.querySelectorAll(".remove-from-cart").forEach((button) => {
+  button.addEventListener("click", () => {
+    const productId = button.getAttribute("data-product-id");
+    removeFromCart(productId);
+  });
+});
 
 // อัพเดทการแสดงผลตะกร้า
 function updateCartDisplay() {
@@ -63,14 +60,14 @@ function updateCartDisplay() {
     const itemTotalPrice = item.quantity * item.price;
     totalPrice += itemTotalPrice;
     const productElement = document.createElement("p");
-   
+
     productElement.textContent = `${item.name}: ${item.quantity} x $${item.price} = $${itemTotalPrice} `;
     cartElement.appendChild(productElement);
 
     const addButton = document.createElement("button");
     addButton.textContent = " + ";
     addButton.addEventListener("click", () => {
-      addToCart(productId);
+      addToCart(productId, item.price, 1, item.name);
     });
     const removeButton = document.createElement("button");
     removeButton.textContent = " - ";
@@ -81,30 +78,28 @@ function updateCartDisplay() {
     productElement.appendChild(removeButton);
     cartElement.appendChild(productElement);
     hasItems = true; // มีสินค้าในตะกร้า
-    
   }
-    if (Object.keys(cart).length === 0) {
-        const cartIcon = document.createElement("i");
-        cartIcon.classList.add("fas", "fa-shopping-cart");
-        cartElement.appendChild(cartIcon);
-        cartElement.innerHTML += "<p>No items in cart.</p>";
-    } else {
-        const totalPriceElement = document.createElement("p");
-        totalPriceElement.textContent = `Total Price: $${totalPrice}`;
-        cartElement.appendChild(totalPriceElement);
-    }
 
-// เพิ่มปุ่ม "Print Receipt" เมื่อมีสินค้าในตะกร้า
-    if (Object.keys(cart).length > 0) {
-        const printButton = document.createElement("button");
-        printButton.textContent = "Print Receipt";
-        printButton.addEventListener("click", () => {
-            printReceipt();
-        });
-        cartElement.appendChild(printButton);
-    }
+  if (Object.keys(cart).length === 0) {
+    const cartIcon = document.createElement("i");
+    cartIcon.classList.add("fas", "fa-shopping-cart");
+    cartElement.appendChild(cartIcon);
+    cartElement.innerHTML += "<p>No items in cart.</p>";
+  } else {
+    const totalPriceElement = document.createElement("p");
+    totalPriceElement.textContent = `Total Price: $${totalPrice}`;
+    cartElement.appendChild(totalPriceElement);
+  }
 
-    
+  // เพิ่มปุ่ม "Print Receipt" เมื่อมีสินค้าในตะกร้า
+  if (Object.keys(cart).length > 0) {
+    const printButton = document.createElement("button");
+    printButton.textContent = "Print Receipt";
+    printButton.addEventListener("click", () => {
+      printReceipt();
+    });
+    cartElement.appendChild(printButton);
+  }
 }
 
 // ฟังก์ชันสำหรับพิมพ์ใบเสร็จ
@@ -121,28 +116,32 @@ function printReceipt() {
   printWindow.document.write(`<p>Phone Number Customer: ${phoneNumber}</p>`);
   printWindow.document.write(`<p>Phone Number Restaurant : 099-5895103</p>`);
 
-  let receiptContent = "<h4>Items</h4>";
-  receiptContent += "<ul>";
+  // สร้างตารางสำหรับแสดงรายการสินค้า
+  printWindow.document.write("<table style='border-collapse: collapse;'>");
+  printWindow.document.write(
+    "<tr><th style='border: 1px solid black;'>Product</th><th style='border: 1px solid black;'> Quantity </th><th style='border: 1px solid black;'> Price </th><th style='border: 1px solid black;'> Total </th></tr>"
+  );
+
   let totalPrice = 0;
   for (const productId in cart) {
     const item = cart[productId];
-    receiptContent += `<li>${item.name}: ${item.quantity} x $${item.price} = $${
-      item.price * item.quantity
-    }</li>`;
-    totalPrice += item.price * item.quantity; // รวมราคาสินค้าทั้งหมด
-  }
-  receiptContent += "</ul>";
+    const itemTotalPrice = item.quantity * item.price;
+    totalPrice += itemTotalPrice;
 
-  receiptContent += `<p>Total Price: $${totalPrice}</p>`; // เพิ่มราคารวมลงในใบเสร็จ
-  printWindow.document.write(receiptContent);
+    // เพิ่มแต่ละแถวของรายการสินค้าในตาราง
+    printWindow.document.write(
+      `<tr><td style='border: 1px solid black;'>${item.name}</td><td style='border: 1px solid black;'>${item.quantity}</td><td style='border: 1px solid black;'>$${item.price}</td><td style='border: 1px solid black;'>$${itemTotalPrice}</td></tr>`
+    );
+  }
+
+  printWindow.document.write("</table>");
+
+  // เพิ่มราคารวมลงในใบเสร็จ
+  printWindow.document.write(`<p>Total Price: $${totalPrice}</p>`);
 
   printWindow.document.write("</body></html>");
   printWindow.document.close();
   printWindow.print();
 }
-
-
-
-
 
 
